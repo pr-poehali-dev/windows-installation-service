@@ -1,0 +1,36 @@
+{
+  "tests": [
+    {
+      "name": "Create booking successfully",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Иван Тестов",
+        "phone": "+7 (999) 123-45-67",
+        "service": "Переустановка Windows",
+        "booking_date": "2024-12-20",
+        "booking_time": "14:00",
+        "comment": "Нужна срочная переустановка"
+      },
+      "expectedStatus": 201,
+      "expectedBody": {
+        "success": true,
+        "message": "Заявка успешно создана"
+      },
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Missing required fields",
+      "method": "POST",
+      "path": "/",
+      "body": {
+        "name": "Иван Тестов"
+      },
+      "expectedStatus": 400,
+      "expectedBody": {
+        "error": "string"
+      },
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -12,6 +12,8 @@ import Icon from '@/components/ui/icon';
 import { format } from 'date-fns';
 import { ru } from 'date-fns/locale';
 import { toast } from 'sonner';
+import { ChatWidget } from '@/components/ChatWidget';
+import { ContactButtons } from '@/components/ContactButtons';
 
 const Index = () => {
   const [date, setDate] = useState<Date>();
@@ -96,16 +98,43 @@ const Index = () => {
     '15:00', '16:00', '17:00', '18:00', '19:00', '20:00'
   ];
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!date || !selectedTime || !formData.name || !formData.phone || !formData.service) {
       toast.error('Пожалуйста, заполните все обязательные поля');
       return;
     }
-    toast.success('Заявка принята! Мы свяжемся с вами в ближайшее время.');
-    setFormData({ name: '', phone: '', service: '', comment: '' });
-    setDate(undefined);
-    setSelectedTime('');
+
+    try {
+      const response = await fetch('https://functions.poehali.dev/b2e0a1c4-b286-41e9-8947-e5a223a2aabf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.name,
+          phone: formData.phone,
+          service: formData.service,
+          booking_date: format(date, 'yyyy-MM-dd'),
+          booking_time: selectedTime,
+          comment: formData.comment
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok && data.success) {
+        toast.success('Заявка принята! Мы свяжемся с вами в ближайшее время.');
+        setFormData({ name: '', phone: '', service: '', comment: '' });
+        setDate(undefined);
+        setSelectedTime('');
+      } else {
+        toast.error(data.message || 'Ошибка при отправке заявки');
+      }
+    } catch (error) {
+      toast.error('Ошибка соединения с сервером');
+      console.error('Booking error:', error);
+    }
   };
 
   return (
@@ -388,6 +417,9 @@ const Index = () => {
           <p>&copy; 2024 PC Service. Все права защищены.</p>
         </div>
       </footer>
+
+      <ChatWidget />
+      <ContactButtons />
     </div>
   );
 };
